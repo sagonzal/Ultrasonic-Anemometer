@@ -1,2 +1,2 @@
 # Ultrasonic-Anemometer
-The project aims at designing a low-cost full digital highly accurate ultrasonic anemometer based on the i.MX RT crossover MCU from NXP. 
+TThe project aims at designing a low-cost full digital highly accurate ultrasonic anemometer based on the i.MX RT crossover MCU from NXP. 
