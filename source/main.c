@@ -1,5 +1,6 @@
 /*
- * Copyright 2019-2020 Sergio Alejandro González
+ * Copyright (c) 2015, Freescale Semiconductor, Inc.
+ * Copyright 2016-2017 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -16,6 +17,7 @@
 #include "fsl_debug_console.h"
 #include "fsl_adc.h"
 #include "fsl_adc_etc.h"
+#include "fsl_gpio.h"
 #include "board.h"
 
 #include "pin_mux.h"
@@ -36,6 +38,10 @@
 #define EXAMPLE_ADC_ETC_DONE0_Handler ADC_ETC_IRQ0_IRQHandler
 
 #define NUM_TIMERS 5
+
+#define LED_GPIO BOARD_USER_LED_GPIO
+#define LED_GPIO_PIN BOARD_USER_LED_GPIO_PIN
+
 
 
 /*******************************************************************************
@@ -60,6 +66,8 @@ TimerHandle_t xTimers[ NUM_TIMERS ];
 int32_t lExpireCounters[ NUM_TIMERS ] = { 0 };
 // a variable to set type of control
 uint8_t	controlType;
+/* The PIN status */
+volatile bool g_pinSet = false;
 
 /*******************************************************************************
  * Code
@@ -147,6 +155,8 @@ void vTimerCallback( TimerHandle_t pxTimer )
  */
 int main(void)
 {
+    /* Define some initialization structures for different peripheral drivers */
+    gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
 	adc_etc_config_t adcEtcConfig;
 	adc_etc_trigger_config_t adcEtcTriggerConfig;
 	adc_etc_trigger_chain_config_t adcEtcTriggerChainConfig;
@@ -157,6 +167,9 @@ int main(void)
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
     ADC_Configuration();
+
+    /* Initialize the output LED GPIO. */
+    GPIO_PinInit(LED_GPIO, LED_GPIO_PIN, &led_config);
 
     /* Initialize the ADC_ETC. */
     ADC_ETC_GetDefaultConfig(&adcEtcConfig);
@@ -242,6 +255,9 @@ static void hello_task(void *pvParameters)
 {
     for (;;)
     {
+        GPIO_PinWrite(LED_GPIO, LED_GPIO_PIN, 0U);
+        g_pinSet = false;
+
         PRINTF("Hello from the amazing ARM world.\r\n");
         PRINTF("...System clock: %u Hz.\r\n", SystemCoreClock);
         PRINTF("and welcome to the ultrasonic anemometer demo\r\n");
@@ -251,6 +267,10 @@ static void hello_task(void *pvParameters)
         PRINTF("Currently, using %s:\r\n", DEMO_ADC_BASE);
         PRINTF("...ADC Full Range: %d\r\n", g_Adc_12bitFullRange);
         PRINTF("...ADC channel: %d\r\n", DEMO_ADC_USER_CHANNEL);
+
+        GPIO_PinWrite(LED_GPIO, LED_GPIO_PIN, 1U);
+        g_pinSet = true;
+
         vTaskSuspend(NULL);
     }
 }

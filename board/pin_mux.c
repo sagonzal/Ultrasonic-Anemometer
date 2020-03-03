@@ -40,8 +40,13 @@ void BOARD_InitBootPins(void) {
 BOARD_InitPins:
 - options: {callFromInitBoot: 'true', coreID: core0, enableClock: 'true'}
 - pin_list:
-  - {pin_num: '3', peripheral: LPUART1, signal: RXD, pin_signal: GPIO_09, software_input_on: Disable, open_drain: Disable}
-  - {pin_num: '2', peripheral: LPUART1, signal: TXD, pin_signal: GPIO_10, software_input_on: Disable, open_drain: Disable}
+  - {pin_num: '3', peripheral: LPUART1, signal: RXD, pin_signal: GPIO_09, slew_rate: Slow, software_input_on: Disable, open_drain: Disable, speed: MHZ_150, drive_strength: R0_4,
+    pull_keeper_select: Keeper, pull_keeper_enable: Enable, pull_up_down_config: Pull_Down_100K_Ohm, hysteresis_enable: Disable}
+  - {pin_num: '2', peripheral: LPUART1, signal: TXD, pin_signal: GPIO_10, slew_rate: Slow, software_input_on: Disable, open_drain: Disable, speed: MHZ_150, drive_strength: R0_4,
+    pull_keeper_select: Keeper, pull_keeper_enable: Enable, pull_up_down_config: Pull_Down_100K_Ohm, hysteresis_enable: Disable}
+  - {pin_num: '43', peripheral: ADC1, signal: 'IN, 14', pin_signal: GPIO_AD_14, slew_rate: Slow, software_input_on: Disable, open_drain: Disable, speed: MHZ_150,
+    drive_strength: R0_4, pull_keeper_select: Keeper, pull_keeper_enable: Disable, pull_up_down_config: Pull_Down_100K_Ohm, hysteresis_enable: Disable}
+  - {pin_num: '1', peripheral: GPIO1, signal: 'gpiomux_io, 11', pin_signal: GPIO_11, open_drain: Disable, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -60,6 +65,16 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_10_LPUART1_TXD,             /* GPIO_10 is configured as LPUART1_TXD */
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_AD_14_GPIOMUX_IO28,         /* GPIO_AD_14 is configured as GPIOMUX_IO28 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_11_GPIOMUX_IO11,            /* GPIO_11 is configured as GPIOMUX_IO11 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_GPR->GPR26 = ((IOMUXC_GPR->GPR26 &
+    (~(IOMUXC_GPR_GPR26_GPIO_SEL_MASK)))      /* Mask bits to zero which are setting */
+      | IOMUXC_GPR_GPR26_GPIO_SEL(0x00U)      /* Select GPIO1 or GPIO2: 0x00U */
+    );
   IOMUXC_SetPinConfig(
       IOMUXC_GPIO_09_LPUART1_RXD,             /* GPIO_09 PAD functional properties : */
       0x10A0U);                               /* Slew Rate Field: Slow Slew Rate
@@ -80,6 +95,27 @@ void BOARD_InitPins(void) {
                                                  Pull / Keep Select Field: Keeper
                                                  Pull Up / Down Config. Field: 100K Ohm Pull Down
                                                  Hyst. Enable Field: Hysteresis Disabled */
+  IOMUXC_SetPinConfig(
+      IOMUXC_GPIO_AD_14_GPIOMUX_IO28,         /* GPIO_AD_14 PAD functional properties : */
+      0xA0U);                                 /* Slew Rate Field: Slow Slew Rate
+                                                 Drive Strength Field: R0/4
+                                                 Speed Field: fast(150MHz)
+                                                 Open Drain Enable Field: Open Drain Disabled
+                                                 Pull / Keep Enable Field: Pull/Keeper Disabled
+                                                 Pull / Keep Select Field: Keeper
+                                                 Pull Up / Down Config. Field: 100K Ohm Pull Down
+                                                 Hyst. Enable Field: Hysteresis Disabled */
+  IOMUXC_SetPinConfig(
+      IOMUXC_GPIO_11_GPIOMUX_IO11,            /* GPIO_11 PAD functional properties : */
+      0x70A0U);                               /* Slew Rate Field: Slow Slew Rate
+                                                 Drive Strength Field: R0/4
+                                                 Speed Field: fast(150MHz)
+                                                 Open Drain Enable Field: Open Drain Disabled
+                                                 Pull / Keep Enable Field: Pull/Keeper Enabled
+                                                 Pull / Keep Select Field: Pull
+                                                 Pull Up / Down Config. Field: 47K Ohm Pull Up
+                                                 Hyst. Enable Field: Hysteresis Disabled */
+
 }
 
 /***********************************************************************************************************************
